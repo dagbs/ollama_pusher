@@ -5,9 +5,19 @@ import ollama
 from modelfile import Template
 from huggingface_hub import hf_hub_download, HfFileSystem
 
+# https://github.com/ollama/ollama/blob/main/docs/import.md#publishing-your-model-optional--early-alpha
+# OLLAMA_REPO_OWNER is your username on ollama.com
+# you need to have your ollama public key added to your ollama account to be able to publish models
 OLLAMA_REPO_OWNER = 'dagbs'
-DEEP_CLEAN_DEFAULT = True
+
+# CLEAN_DEFAULT will remove the build directory and the model directory before building a new one as well as cleaning up post publish
+# this happens on every quant
 CLEAN_DEFAULT = True
+
+# DEEP_CLEAN_DEFAULT will remove the models from your local ollama instance after it has been published
+DEEP_CLEAN_DEFAULT = True
+
+
 fs = HfFileSystem()
 
 def do_repo(repo_id, *args):
