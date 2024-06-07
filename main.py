@@ -17,6 +17,11 @@ CLEAN_DEFAULT = True
 # DEEP_CLEAN_DEFAULT will remove the models from your local ollama instance after it has been published
 DEEP_CLEAN_DEFAULT = True
 
+# probably want to remove this or increase to a much larger number for bigger models
+# this version of the script doesn't support split files which happens if a model is bigger than 50GB
+# this means this is not a perfect solution but hopefully it will work for most models
+MAX_FILESIZE_GB = 50
+
 
 fs = HfFileSystem()
 
@@ -27,7 +32,7 @@ def do_repo(repo_id, *args):
             print(f"Skipping {file['name']} because it is in a folder")
             continue
 
-        if file['size'] > 50 * 1024**3:
+        if file['size'] > MAX_FILESIZE_GB * 1024**3:
             print(f"Skipping {file['name']} because it's too large")
             continue
 
@@ -149,5 +154,15 @@ def do_quant(repo_id, filename, quant=None, latest=None, pre_clean=CLEAN_DEFAULT
     print('done!')
 
 if __name__ == "__main__":
+    # INDIVIDUAL OPTION / FILE-BY-FILE
+    # syntax: python main.py <repo_id> <filename.gguf> (quant:str) (latest:bool) (pre_clean:bool) (post_clean:bool) (deep_clean:bool) 
+    # [basic]: python main.py dagbs/TinyDolphin-2.8-1.1b-GGUF TinyDolphin-2.8-1.1b.Q8_0.gguf
+    # - downloads and converts only the Q8_0 bit version
+    # [adv-quant]: python main.py dagbs/TinyDolphin-2.8-1.1b-GGUF TinyDolphin-2.8-1.1b.Q8_0.gguf Q8_0 True False True False
+    # - downloads and converts only the Q8_0 bit version, labels it as Q8_0 & latest, skips pre_cleaning (for easy resume), cleans after publish, but keeps model in local ollama instance
     # main(*sys.argv[1:])
+
+    # (DEFAULT) BULK OPTION / CONVERT ENTIRE REPO, FILE-BY-FILE
+    # downloads entire `https://huggingface.co/dagbs/TinyDolphin-2.8-1.1b-GGUF` repo, file-by-file, builds modefile for it, and publishes to ollama
+    # python main.py dagbs/TinyDolphin-2.8-1.1b-GGUF
     do_repo(*sys.argv[1:])    
